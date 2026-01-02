@@ -171,7 +171,9 @@ function addNode(path, name, result, currentLevel, maxLevel) {
     while (collection < 5 || found) {
       if (!indentSub) {
         result.push("+");
-        result.push(child.name);
+        if (!addNode(currentPath + " " + child.name, "" + collection, result, currentLevel + 1, maxLevel)) {
+          result.push(child.name);
+        }
         result.push("+");
         indent = true;
       }
