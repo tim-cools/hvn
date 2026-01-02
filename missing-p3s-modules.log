@@ -1,6 +1,8 @@
 >>> print(sys.version)
 3.7.3 (default, Sep 30 2024, 08:47:59) 
 [Clang 12.0.0 (https://github.com/llvm/llvm-project fa0971b87fb2c9d14d1bba2551e
+>>> import os
+>>> help('modules')      # not not-imported libraries ;-)
 
 _asyncio            	TRUE
 _bisect             	TRUE
