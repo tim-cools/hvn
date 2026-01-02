@@ -18,9 +18,9 @@ class LiveClient:
         self.localhost = "127.0.0.1"
         self.portLiveServer = 9000
         self.portLocalServer = 9001
-        self.connection_timeout_microseconds = 500000
-        self.last_server_timestamp = 0
-        self.last_connection_timestamp = datetime.datetime.now()
+        self.connection_timeout_milliseconds = 500
+        self.last_server_timestamp = 0                             # todo figure out synchronization
+        self.last_connection_timestamp = datetime.datetime.now()   # todo figure out synchronization
         self.dispatcher = Dispatcher()
         self.is_connected = False
         self.server = osc_server.ThreadingOSCUDPServer((self.localhost, self.portLocalServer), self.dispatcher)
@@ -44,7 +44,7 @@ class LiveClient:
             time.sleep(0.2)
 
             elapsed = datetime.datetime.now() - self.last_connection_timestamp
-            if self.is_connected and elapsed.microseconds > self.connection_timeout_microseconds:
+            if self.is_connected and elapsed.microseconds > (self.connection_timeout_milliseconds * 1000):
                 log(f"LiveClient - Server disconnected")
                 self.is_connected = False
 
@@ -63,13 +63,22 @@ class LiveClient:
         self.responseHandler(value)
 
     def info_reply_handler(self, unused_addr, args, value):
-        log(f"LiveClient - info reply {args} {value}")
-        data = {
-            "action": "info",
-            "addr": unused_addr,
-            "args": args,
-            "value": self.parse_info(value)
-        }
+        log(f"LiveClient - info reply '{args}' '{value}'")
+        if value == '"No object"':
+            data = {
+                "action": "info",
+                "error": True,
+                "addr": unused_addr,
+                "args": args,
+                "value": value
+            }
+        else:
+            data = {
+                "action": "info",
+                "addr": unused_addr,
+                "args": args,
+                "value": self.parse_info(value)
+            }
         value = json.dumps(data)
         self.responseHandler(value)
 
@@ -148,5 +157,5 @@ class LiveClient:
             check(line, "description")
             checkCollection(line, "child", "children", True)
             checkCollection(line, "property", "properties", True)
-            checkCollection(line, "function", "function", False)
+            checkCollection(line, "function", "functions", False)
         return info

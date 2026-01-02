@@ -22,11 +22,8 @@ function App() {
   }
 
   return <>
-    <CssBaseline />
-    <ThemeProvider theme={theme}>
-      <MainAppBar setPage={setPage}/>
-      {pageView}
-    </ThemeProvider>
+    <Debugger />
+
   </>;
 }
 

@@ -1,20 +1,26 @@
 import React, {useEffect, useRef, useState} from "react";
 import {Box, Button, Paper, Stack, TextField, Typography} from "@mui/material";
+import ReconnectingWebSocket from 'reconnecting-websocket';
 
 export default function LiveApi() {
 
   const [path, setPath] = useState<string>("live_set master_track mixer_device volume");
   const [name, setName] = useState<string>("value");
+  const [timerId, setTimerId] = useState<NodeJS.Timer>();
   const [message, setMessage] = useState<any>();
-  const ws = useRef<WebSocket | null>(null);
+  const ws = useRef<ReconnectingWebSocket | null>(null);
 
   function connect() {
-    ws.current = new WebSocket("ws://localhost:8000/ws");
-    ws.current.onopen = () => console.log("ws opened");
-    ws.current.onclose = () => {
-      console.log("ws closed")
-      setTimeout(connect, 200);
+    console.log("connect")
+    ws.current = new ReconnectingWebSocket("ws://localhost:8000/ws");
+    ws.current.onerror = (): void => {
+      console.log("ws onerror")
     };
+
+    ws.current.onopen = (): void => {
+      console.log("ws onopen")
+    };
+
     ws.current.onmessage = event => {
       const message = JSON.parse(event.data);
       setMessage(message);
@@ -23,10 +29,16 @@ export default function LiveApi() {
   }
 
   useEffect(() => {
+    console.log("useEffect")
     connect();
     const wsCurrent = ws.current;
-    return () => wsCurrent?.close();
-  }, [connect]);
+    return () => {
+      console.log("useEffect.close")
+      if (wsCurrent?.readyState === 1) {
+        wsCurrent.close();
+      }
+    };
+  }, []);
 
   function sendMessage(action: string) {
     const data = {
@@ -42,7 +54,7 @@ export default function LiveApi() {
   }
 
   function renderCollection(name: string, values: any[]) {
-    const elements = values.map(value => <div>{JSON.stringify(value)}</div>);
+    const elements = values ? values.map(value => <div>{JSON.stringify(value)}</div>) : <div>empty</div>;
     return <Paper>
       <Typography gutterBottom sx={{ color: 'text.secondary', fontSize: 14 }}>
         {name}
@@ -52,6 +64,9 @@ export default function LiveApi() {
   }
 
   function renderInfoMessage() {
+    if (message.error) {
+      return <Paper elevation={3}>{message.value}</Paper>;
+    }
     return <Stack direction="column" spacing={2}>
       <TextField label="Id" variant="outlined" value={message.value.id} />
       <TextField label="type" variant="outlined" value={message.value.type} />
@@ -59,7 +74,7 @@ export default function LiveApi() {
       <>{renderCollection("children", message.value.children)}</>
       <>{renderCollection("properties", message.value.properties)}</>
       <>{renderCollection("functions", message.value.functions)}</>
-    </Stack>
+    </Stack>;
   }
 
   function renderLastMessage() {

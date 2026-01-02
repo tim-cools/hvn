@@ -46,9 +46,9 @@ class WebServer:
     def create_runner(self):
         app = web.Application()
         app.add_routes([
-            # web.static('/', dir_static_files),
-            # web.get('/hello', http_handler),
             web.get('/ws', self.websocket_handler),
+            web.get('/hello', self.http_handler),
+            web.static('/', self.dir_static_files),
         ])
         return web.AppRunner(app)
 
