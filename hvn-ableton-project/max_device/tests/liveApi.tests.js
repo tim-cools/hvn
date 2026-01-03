@@ -66,4 +66,34 @@ describe('treeSequenceBuilder', () => {
     expect(tree["root2"]["child21"]).not.toBeUndefined();
     expect(tree["root2"]["child22"]).not.toBeUndefined();
   });
+
+  it('should sequence not sequence and empty scopes', () => {
+    var builder = new treeSequenceBuilder();
+    builder.addNode("root1");
+    builder.openScope();
+    builder.closeScope();
+    builder.openScope();
+    builder.addNode("child11");
+      builder.addNode("child12");
+      builder.openScope();
+      builder.closeScope();
+    builder.closeScope();
+    builder.addNode("root2");
+    builder.openScope();
+      builder.addNode("child21");
+      builder.addNode("child22");
+    builder.closeScope();
+
+    var sequence = builder.sequence();
+    expect(sequence).toBe("root1|+|child11|child12|-|root2|+|child21|child22|-");
+
+    var tree = parseTreeSequence(sequence);
+    expect(tree).not.toBeUndefined();
+    expect(tree["root1"]).not.toBeUndefined();
+    expect(tree["root1"]["child11"]).not.toBeUndefined();
+    expect(tree["root1"]["child12"]).not.toBeUndefined();
+    expect(tree["root2"]).not.toBeUndefined();
+    expect(tree["root2"]["child21"]).not.toBeUndefined();
+    expect(tree["root2"]["child22"]).not.toBeUndefined();
+  });
 });

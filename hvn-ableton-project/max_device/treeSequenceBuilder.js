@@ -1,6 +1,8 @@
 function treeSequenceBuilder() {
 
   var _sequence = "";
+  var _currentLevel = {childrenAdded: true};
+  var _levels = [];
 
   function addSeparatorIfNeeded() {
     if (_sequence.length > 0) {
@@ -9,16 +11,24 @@ function treeSequenceBuilder() {
   }
 
   function addNode(name) {
+    if (!_currentLevel.childrenAdded) {
+      _currentLevel.childrenAdded = true;
+      _sequence += "|+";
+    }
     addSeparatorIfNeeded();
     _sequence += name;
   }
 
   function openScope() {
-    _sequence += "|+";
+    _levels.push(_currentLevel);
+    _currentLevel = {childrenAdded: false}
   }
 
   function closeScope() {
-    _sequence += "|-";
+    if (_currentLevel.childrenAdded) {
+      _sequence += "|-";
+    }
+    _currentLevel = _levels.pop();
   }
 
   function sequence() {

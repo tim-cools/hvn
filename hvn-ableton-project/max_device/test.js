@@ -1,3 +1,18 @@
+function treeBuilder() {
+  
+
+  return {
+
+  };
+}
+
+function liveApi() {
+
+ return {
+   getChildren: getChildren; 
+ }
+}()
+
 function log() {
   for(var i=0; i < arguments.length; i++) {
     var s = String(arguments[i]);
