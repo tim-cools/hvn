@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "expect": "^30.2.0"
+  },
+  "type": "module",
+  "devDependencies": {
+    "mocha": "^11.7.5"
+  }
+}
