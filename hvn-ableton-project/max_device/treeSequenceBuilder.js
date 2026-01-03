@@ -4,6 +4,13 @@ function treeSequenceBuilder() {
   var _currentLevel = {childrenAdded: true};
   var _levels = [];
 
+  function startScopeIfNeeded() {
+    if (!_currentLevel.childrenAdded) {
+      _currentLevel.childrenAdded = true;
+      _sequence += "|+";
+    }
+  }
+
   function addSeparatorIfNeeded() {
     if (_sequence.length > 0) {
       _sequence += "|";
@@ -11,10 +18,7 @@ function treeSequenceBuilder() {
   }
 
   function addNode(name) {
-    if (!_currentLevel.childrenAdded) {
-      _currentLevel.childrenAdded = true;
-      _sequence += "|+";
-    }
+    startScopeIfNeeded();
     addSeparatorIfNeeded();
     _sequence += name;
   }
