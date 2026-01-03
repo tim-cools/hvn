@@ -67,7 +67,7 @@ describe('treeSequenceBuilder', () => {
     expect(tree["root2"]["child22"]).not.toBeUndefined();
   });
 
-  it('should sequence not sequence and empty scopes', () => {
+  it('should not sequence empty scopes', () => {
     var builder = new treeSequenceBuilder();
     builder.addNode("root1");
     builder.openScope();
