@@ -4,23 +4,33 @@ function treeSequenceBuilder() {
   var _currentLevel = {childrenAdded: true};
   var _levels = [];
 
-  function startScopeIfNeeded() {
+  function renderOpenScopeIfNeeded() {
     if (!_currentLevel.childrenAdded) {
       _currentLevel.childrenAdded = true;
       _sequence += "|+";
     }
   }
 
-  function addSeparatorIfNeeded() {
+  function renderSeparatorIfNeeded() {
     if (_sequence.length > 0) {
       _sequence += "|";
     }
   }
 
   function addNode(name) {
-    startScopeIfNeeded();
-    addSeparatorIfNeeded();
+    if (_currentLevel.addParentNode) {
+      let parentNodeFactory = _currentLevel.addParentNode;
+      _currentLevel.addParentNode = null;
+      parentNodeFactory();
+      openScope();
+    }
+    renderOpenScopeIfNeeded();
+    renderSeparatorIfNeeded();
     _sequence += name;
+  }
+
+  function optionalParentNodeScope(addParentNode) {
+    _currentLevel.addParentNode = addParentNode;
   }
 
   function openScope() {
@@ -29,6 +39,10 @@ function treeSequenceBuilder() {
   }
 
   function closeScope() {
+    if (_currentLevel.addParentNode) {
+      _currentLevel.addParentNode = null;
+      return;
+    }
     if (_currentLevel.childrenAdded) {
       _sequence += "|-";
     }
@@ -43,7 +57,8 @@ function treeSequenceBuilder() {
     addNode: addNode,
     openScope: openScope,
     closeScope: closeScope,
-    sequence: sequence
+    sequence: sequence,
+    optionalParentNodeScope: optionalParentNodeScope
   }
 }
 

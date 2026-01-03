@@ -39,7 +39,7 @@ function parseInfo(path) {
   var info = {
     children: [],
     collections: [],
-    properies: [],
+    properties: [],
     functions: [],
     others: [],
   }
@@ -84,115 +84,6 @@ function parseInfo(path) {
 var liveObject = new LiveAPI("live_set tracks 0");
 post("info", "\"" + liveObject.info.replace(/\n/g, "\\\\") + "\\n" );
 
-function getChildren(path) {
-  var maxLevel = 1;
-  var result = [];
-  if (path == "") {
-    addNode("", "live_set", result, 0, maxLevel);
-    addNode("", "live_app", result, 0, maxLevel);
-    //addNodes("", "control_surfaces", result, 0, maxLevel);
-    addNode("", "this_device", result, 0, maxLevel);
-  } else {
-    addNode(path, result, 0, maxLevel);
-  }
-  return result.join("\n");
-}
-
-
-function addNodes(path, name, result, currentLevel, maxLevel) {
-
-  var info = parseInfo(path);
-  if (info == null) return false;
-
-  result.push(path + "-" + info.type);
-
-  //log("path: " + path);
-  // log("children " + info.children.length);
-  // log("collections " + info.collections.length);
-
-  if (currentLevel == maxLevel) return false;
-
-  var collection = 0;  
-  var found = false;
-  var indent = false;
-  while (collection < 5 || found) {
-    if (!indent) {
-      result.push("+");
-      indent = true;
-    }
-    found = addNode(path, collection, result, currentLevel + 1, maxLevel);
-    collection ++;
-  }
-  if (indent) {
-    result.push("-");
-  }
-
-  return true;
-}
-
-function addNode(path, name, result, currentLevel, maxLevel) {
-
-  var currentPath = path + " " + name;
-  var info = parseInfo(currentPath);
-  if (info == null) return false;
-
-  result.push(currentPath + "-" + info.type);
-  // result.push(name + "-" + info.type);
-
-  log("path: " + currentPath);
-  // log("children " + info.children.length);
-  // log("collections " + info.collections.length);
-
-  if (currentLevel == maxLevel) return false;
-
-  var indent = false;
-  for (var i = 0; i < info.children.length; i++) {
-    var child = info.children[i];
-    if (child.name == "canonical_parent") continue;
-
-    if (!indent) {
-      result.push("+");
-      indent = true;
-    }
-
-    addNode(currentPath, child.name, result, currentLevel + 1, maxLevel);
-  }
-  if (indent) {
-    result.push("-");
-  }
-
-  indent = false;
-  for (var i = 0; i < info.collections.length; i++) {
-    var child = info.collections[i];  
-
-    //addNode(path + " " + child.name, result, currentLevel + 1, maxLevel);
-   
-    var collection = 0;  
-    var found = false;
-    var indentSub = false;
-    while (collection < 5 || found) {
-      if (!indentSub) {
-        result.push("+");
-        if (!addNode(currentPath + " " + child.name, "" + collection, result, currentLevel + 1, maxLevel)) {
-          result.push(child.name);
-        }
-        result.push("+");
-        indent = true;
-      }
-      found = addNode(currentPath + " " + child.name, "" + collection, result, currentLevel + 1, maxLevel);
-      if (found) indentSub = true;
-      collection ++;
-    }
-    if (indentSub) {
-      result.push("-");
-    }
-  }
-  if (indent) {
-    result.push("-");
-  }
-
-  return true;
-}
 
 function get_tree() {
   var result = [];

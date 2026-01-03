@@ -7,15 +7,17 @@ function parseTreeSequence(sequence) {
 
   for (var index = 0; index < parts.length; index ++) {
     var part = parts[index];
-    if (part === "+") {
+    var nodeParts = part.split(":");
+    var name = nodeParts[0];
+    if (name === "+") {
       objectStack.push(currentObject);
       currentObject = lastObject;
-    } else if (part === "-") {
+    } else if (name === "-") {
       currentObject = objectStack.pop();
       lastObject = currentObject;
     } else {
       lastObject = {};
-      currentObject[part] = lastObject;
+      currentObject[name] = lastObject;
     }
   }
 
