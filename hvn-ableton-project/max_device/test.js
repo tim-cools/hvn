@@ -1,17 +1,3 @@
-function treeBuilder() {
-  
-
-  return {
-
-  };
-}
-
-function liveApi() {
-
- return {
-   getChildren: getChildren; 
- }
-}()
 
 function log() {
   for(var i=0; i < arguments.length; i++) {
@@ -94,8 +80,9 @@ function parseInfo(path) {
 //log(get_tree());
 
 //log(parseInfo("control_surfaces"));
-
-log(getChildren(""))
+//log(getChildren(""))
+var liveObject = new LiveAPI("live_set tracks 0");
+post("info", "\"" + liveObject.info.replace(/\n/g, "\\\\") + "\\n" );
 
 function getChildren(path) {
   var maxLevel = 1;
