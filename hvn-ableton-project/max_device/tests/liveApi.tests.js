@@ -73,7 +73,7 @@ describe('treeSequenceBuilder', () => {
     builder.openScope();
     builder.closeScope();
     builder.openScope();
-    builder.addNode("child11");
+      builder.addNode("child11");
       builder.addNode("child12");
       builder.openScope();
       builder.closeScope();
