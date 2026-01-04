@@ -3,7 +3,7 @@ function parseTreeSequence(sequence) {
   var parts = sequence.split("|");
   var objectStack = [];
   var currentObject = {};
-  var lastObject = {};
+  var lastObject = currentObject;
 
   for (var index = 0; index < parts.length; index ++) {
     var part = parts[index];
@@ -13,12 +13,19 @@ function parseTreeSequence(sequence) {
       objectStack.push(currentObject);
       currentObject = lastObject;
     } else if (name === "-") {
+      if (objectStack.length === 0) {
+        throw new Error("Invalid token '-', sequence is incomplete: " + sequence);
+      }
       currentObject = objectStack.pop();
       lastObject = currentObject;
     } else {
       lastObject = {};
       currentObject[name] = lastObject;
     }
+  }
+
+  if (objectStack.length === 1) {
+    throw new Error("Invalid sequence, not closed: " + sequence);
   }
 
   return currentObject;

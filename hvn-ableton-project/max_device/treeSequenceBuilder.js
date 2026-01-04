@@ -19,7 +19,7 @@ function treeSequenceBuilder() {
 
   function addNode(name) {
     if (_currentLevel.addParentNode) {
-      let parentNodeFactory = _currentLevel.addParentNode;
+      var parentNodeFactory = _currentLevel.addParentNode;
       _currentLevel.addParentNode = null;
       parentNodeFactory();
       openScope();

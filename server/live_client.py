@@ -9,7 +9,7 @@ from pythonosc.dispatcher import Dispatcher
 from pythonosc import osc_server
 
 from log import log
-
+from parse_tree_sequence import parse_tree_sequence
 
 
 class LiveClient:
@@ -29,18 +29,19 @@ class LiveClient:
         self.toggle = False
 
     def start_server(self):
-        log(f"LiveClient - Starting Server - Serving on {self.server.server_address}")
+        log(f"LiveClient - Starting Server - Listening to {self.server.server_address}")
         thread = threading.Thread(target=self.server.serve_forever)
         thread.start()
 
     def start_client(self):
-        log(f"LiveClient - Starting Client - Sending to ('{self.localhost}', '{self.portLocalServer}')")
-        thread = threading.Thread(target=self.send_ping)
+        log(f"LiveClient - Starting Client - Sending to ('{self.localhost}', {self.portLiveServer})")
+        thread = threading.Thread(target=self.send_heartbeat)
         thread.start()
 
-    def send_ping(self):
+    def send_heartbeat(self):
         while True:
-            self.client.send_message("/ping", [])
+            # log(f"LiveClient - heartbeat")
+            self.client.send_message("/heartbeat", [])
             time.sleep(0.2)
 
             elapsed = datetime.datetime.now() - self.last_connection_timestamp
@@ -59,8 +60,19 @@ class LiveClient:
             "args": args,
             "value": value
         }
-        value = json.dumps(data)
-        self.responseHandler(value)
+        json_value = json.dumps(data)
+        self.responseHandler(json_value)
+
+    def get_children_reply_handler(self, unused_addr, args, value):
+        log(f"LiveClient - get children reply {args} {value}")
+        data = {
+            "action": "get_children",
+            "addr": unused_addr,
+            "args": args,
+            "value": parse_tree_sequence(value)
+        }
+        json_value = json.dumps(data)
+        self.responseHandler(json_value)
 
     def info_reply_handler(self, unused_addr, args, value):
         log(f"LiveClient - info reply '{args}' '{value}'")
@@ -93,7 +105,7 @@ class LiveClient:
         value = json.dumps(data)
         self.responseHandler(value)
 
-    def ping_handler(self, unused_addr, args, value):
+    def heartbeat_handler(self, unused_addr, args, value):
 
         self.last_connection_timestamp = datetime.datetime.now()
 
@@ -108,9 +120,10 @@ class LiveClient:
 
     def start(self):
         self.dispatcher.map("/_get_reply", self.get_reply_handler)
+        self.dispatcher.map("/_get_children_reply", self.get_children_reply_handler)
         self.dispatcher.map("/_info_reply", self.info_reply_handler)
         self.dispatcher.map("/_observer_reply", self.observer_reply_handler)
-        self.dispatcher.map("/_ping", self.ping_handler)
+        self.dispatcher.map("/_heartbeat_reply", self.heartbeat_handler)
 
         self.start_server()
         self.start_client()
@@ -127,7 +140,7 @@ class LiveClient:
         action = data["action"]
         path = data["path"]
         name = data["name"]
-        log(f"LiveClient - /{action}, {path}, {name}")
+        log(f"LiveClient - Send: /{action}, {path}, {name}")
         self.client.send_message("/" + action, [path, name, random.random()])
 
     @staticmethod

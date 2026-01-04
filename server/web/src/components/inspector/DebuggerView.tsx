@@ -1,44 +1,13 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useState} from "react";
 import {Box, Button, Paper, Stack, TextField, Typography} from "@mui/material";
-import ReconnectingWebSocket from 'reconnecting-websocket';
+import { useLiveApiContext} from "../../state/liveApiContext";
 
-export default function LiveApi() {
+export default function DebuggerView() {
 
   const [path, setPath] = useState<string>("live_set master_track mixer_device volume");
   const [name, setName] = useState<string>("value");
-  const [timerId, setTimerId] = useState<NodeJS.Timer>();
-  const [message, setMessage] = useState<any>();
-  const ws = useRef<ReconnectingWebSocket | null>(null);
-
-  function connect() {
-    console.log("connect")
-    ws.current = new ReconnectingWebSocket("ws://localhost:8000/ws");
-    ws.current.onerror = (): void => {
-      console.log("ws onerror")
-    };
-
-    ws.current.onopen = (): void => {
-      console.log("ws onopen")
-    };
-
-    ws.current.onmessage = event => {
-      const message = JSON.parse(event.data);
-      setMessage(message);
-      console.log("onmessage: ", message);
-    };
-  }
-
-  useEffect(() => {
-    console.log("useEffect")
-    connect();
-    const wsCurrent = ws.current;
-    return () => {
-      console.log("useEffect.close")
-      if (wsCurrent?.readyState === 1) {
-        wsCurrent.close();
-      }
-    };
-  }, []);
+  const {lastMessage, setOutgoing} = useLiveApiContext();
+  const message = lastMessage;
 
   function sendMessage(action: string) {
     const data = {
@@ -46,7 +15,16 @@ export default function LiveApi() {
       path: path,
       name: name,
     };
-    ws.current?.send(JSON.stringify(data));
+    setOutgoing(messages => messages.queue(data));
+  }
+
+  function getChildren() {
+    const data = {
+      action: "get_children",
+      path: path,
+      name: 2,
+    };
+    setOutgoing(messages => messages.queue(data));
   }
 
   function renderGetMessage() {
@@ -77,7 +55,7 @@ export default function LiveApi() {
     </Stack>;
   }
 
-  function renderLastMessage() {
+  function renderMessageView() {
     if (message == null) return <></>;
     if (message.action == "get") {
       return renderGetMessage();
@@ -89,7 +67,7 @@ export default function LiveApi() {
     </Box>
   }
 
-  const lastMessage = renderLastMessage();
+  const messageView = renderMessageView();
 
   return (
     <Box component="form" padding={2}>
@@ -105,9 +83,10 @@ export default function LiveApi() {
                    }} />
         <Button variant="contained" onClick={() => sendMessage("get")}>Get</Button>
         <Button variant="contained" onClick={() => sendMessage("call")}>Call</Button>
+        <Button variant="contained" onClick={() => getChildren()}>Get children</Button>
         <Button variant="contained" onClick={() => sendMessage("info")}>Info</Button>
       </Stack>
-      {lastMessage}
+      {messageView}
     </Box>
   );
 }

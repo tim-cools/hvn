@@ -12,15 +12,17 @@ function trim(value, trimValue) {
 function liveApiGetInfo(liveApiFactory) {
 
   var createLiveApi = !!liveApiFactory ? liveApiFactory : createRealLiveApi;
+  var apis = {};
 
   function createRealLiveApi(path) {
-    return new LiveAPI(path);
+    if (apis[path]) return apis[path];
+    return apis[path] = new LiveAPI(path);
   }
 
   function getInfo(path) {
 
     function property(name) {
-      let start = `${name} `;
+      var start = name + " ";
       if (startsWith(line, start)) {
         info[name] = trim(line, start);
         lastProperty = name;
@@ -30,9 +32,9 @@ function liveApiGetInfo(liveApiFactory) {
     }
 
     function collectionPropertyWithType(name, targetCollection) {
-      let start = `${name} `;
+      var start = name + " ";
       if (startsWith(line, start)) {
-        let parts = trim(line, start).split(' ');
+        var parts = trim(line, start).split(' ');
         targetCollection.push({name: parts[0], type: parts[1]});
         lastProperty = null;
         return true;
@@ -41,7 +43,7 @@ function liveApiGetInfo(liveApiFactory) {
     }
 
     function collectionProperty(name, targetCollection) {
-      let start = `${name} `;
+      var start = name + " ";
       if (startsWith(line, start)) {
         targetCollection.push(trim(line, start));
         lastProperty = null;

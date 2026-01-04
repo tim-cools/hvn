@@ -1,26 +1,24 @@
 import liveApiGetInfo from "./liveApiGetInfo.js";
 import treeSequenceBuilder from "./treeSequenceBuilder.js";
 
-const root = "";
-
 function liveApiGetChildren(getInfoMethod) {
 
+  const root = "";
   const minCheckCollectionEntries = 5;     // initial entries are sometimes empty, so check at least first 5
 
-  var getInfo = !!getInfoMethod ? getInfoMethod : realGetInfo;
-
-  function realGetInfo(path) {
-    var getInfoObject = liveApiGetInfo(path);
-    return getInfoObject(path);
-  }
+  var getInfo = getInfoMethod ? getInfoMethod : liveApiGetInfo();
 
   function getChildren(path, maxLevel) {
 
+    function getPath(currentPath, name) {
+      return currentPath + (currentPath && currentPath.length > 0 ? ' ' : '') + name;
+    }
+
     function addCollection(currentPath, name, currentLevel, always) {
 
-      let path = `${currentPath}${currentPath.length > 0 ? ' ' : ''}${name}`;
-      let collectionIndex = 0;
-      let found = false;
+      var path = getPath(currentPath, name);
+      var collectionIndex = 0;
+      var found = false;
 
       if (always || currentLevel == maxLevel) {
         if (!addNode(currentPath, name, currentLevel)) {
@@ -49,30 +47,31 @@ function liveApiGetChildren(getInfoMethod) {
     }
 
     function addChildrenFromInfo(info, path, currentLevel) {
-      for (let index = 0; index < info.children.length; index++) {
-        let child = info.children[index];
+      for (var index = 0; index < info.children.length; index++) {
+        var child = info.children[index];
         if (child.name === "canonical_parent") continue;
         addNode(path, child.name, currentLevel + 1);
       }
     }
 
     function addCollectionsFromInfo(info, path, currentLevel) {
-      for (let index = 0; index < info.collections.length; index++) {
-        let collection = info.collections[index];
+      for (var index = 0; index < info.collections.length; index++) {
+        var collection = info.collections[index];
         addCollection(path, collection.name, currentLevel + 1);
       }
     }
 
     function addNode(currentPath, name, currentLevel) {
 
-      let path = `${currentPath}${currentPath.length > 0 ? ' ' : ''}${name}`;
-      let info = getInfo(path);
+      var path = getPath(currentPath, name);
+      var info = getInfo(path);
 
+      var indent = currentLevel > 0 ? Array(currentLevel * 2).join(" ") : "";
       if (!info) {
-        logging.push(' '.repeat(currentLevel * 2) + ": " + path + " - no info")
+        logging.push(indent + ": " + path + " - no info")
         return false;
       }
-      logging.push(' '.repeat(currentLevel * 2) + ": " + path)
+      logging.push(indent + ": " + path)
 
       nodes.push(path + ":" + info.type);
       tree.addNode(name + ":" + info.type)
@@ -87,32 +86,31 @@ function liveApiGetChildren(getInfoMethod) {
       return true;
     }
 
-    function addChildren(path) {
-
-      let info = getInfo(path);
-
-      if (!info) {
-        logging.push(": " + path + " - no info")
-        return false;
-      }
-      logging.push(": " + path)
-
-      addChildrenFromInfo(info, path, -1);
-      addCollectionsFromInfo(info, path, -1);
-
-      return true;
-    }
-
-    let logging = [];
-    let tree = treeSequenceBuilder();
-    let nodes = [];
-    if (path === "") {
+    function addRoot() {
+      tree.addNode(":root")
+      tree.openScope()
       addNode(root, "live_set", 0);
       addNode(root, "live_app", 0);
       addCollection(root, "control_surfaces", 0, true);
       addNode(root, "this_device", 0);
+      tree.closeScope()
+    }
+
+    function addNodeByPath() {
+      var lastIndex = path.lastIndexOf(" ");
+      var parentPath = path.substr(0, lastIndex);
+      var name = path.substr(lastIndex + 1);
+      addNode(parentPath, name, -1);
+    }
+
+    var logging = [];
+    var tree = treeSequenceBuilder();
+    var nodes = [];
+
+    if (path === "") {
+      addRoot();
     } else {
-      addChildren(path);
+      addNodeByPath();
     }
 
     return {

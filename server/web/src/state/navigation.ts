@@ -1,5 +1,5 @@
 export enum Pages {
-  Debugger,
+  Inspector,
   Tracks,
   Deck1,
   Deck2,

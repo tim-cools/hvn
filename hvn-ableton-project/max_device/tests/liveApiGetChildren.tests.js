@@ -87,7 +87,8 @@ describe('liveApiGetChildren from root', () => {
 
     console.log(result);
 
-    expect(result.sequence).toBe("live_set:type1|live_app:type2|control_surfaces:type3|this_device:type4")
+    expect(result.sequence).toBe(":root|" +
+      "+|live_set:type1|live_app:type2|control_surfaces:type3|this_device:type4|-")
   });
 
   it('one levels should return children', () => {
@@ -97,14 +98,14 @@ describe('liveApiGetChildren from root', () => {
 
     console.log(result);
 
-    expect(result.sequence).toBe('' +
+    expect(result.sequence).toBe(':root|+|' +
       'live_set:type1|' +
         '+|ls_child1:type11|ls_child2:type12|ls_child3:type13|-|' +
       'live_app:type2|' +
         '+|la_child1:type21|la_child2:type22|la_child3:type23|-|' +
       'control_surfaces:type3|' +
         '+|0:type31|1:type32|2:type33|-|' +
-      'this_device:type4')
+      'this_device:type4|-')
   });
 
   it('two levels should return children', () => {
@@ -114,7 +115,7 @@ describe('liveApiGetChildren from root', () => {
 
     console.log(result);
 
-    expect(result.sequence).toBe('' +
+    expect(result.sequence).toBe(':root|+|' +
       'live_set:type1|' +
         '+|ls_child1:type11|' +
           '+|ls1_child1:type111|ls1_child2:type112|ls1_child3:type113|-' +
@@ -131,24 +132,88 @@ describe('liveApiGetChildren from root', () => {
           '+|la3_child1:type131|la3_child2:type132|la3_child3:type132|-|-' +
       '|control_surfaces:type3|' +
         '+|0:type31|1:type32|2:type33|-' +
-      '|this_device:type4');
+      '|this_device:type4|-');
 
     var tree = parseTreeSequence(result.sequence);
     expect(tree).not.toBeUndefined();
-    expect(tree["live_set"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child1"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child1"]["ls1_child1"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child1"]["ls1_child2"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child1"]["ls1_child3"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child2"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child2"]["ls2_child1"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child2"]["ls2_child2"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child2"]["ls2_child3"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child3"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child3"]["ls3_child1"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child3"]["ls3_child2"]).not.toBeUndefined();
-    expect(tree["live_set"]["ls_child3"]["ls3_child3"]).not.toBeUndefined();
-    expect(tree["live_app"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child1"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child1"]["ls1_child1"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child1"]["ls1_child2"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child1"]["ls1_child3"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child2"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child2"]["ls2_child1"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child2"]["ls2_child2"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child2"]["ls2_child3"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child3"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child3"]["ls3_child1"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child3"]["ls3_child2"]).not.toBeUndefined();
+    expect(tree[""]["live_set"]["ls_child3"]["ls3_child3"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child1"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child1"]["la1_child1"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child1"]["la1_child2"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child1"]["la1_child3"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child2"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child2"]["la2_child1"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child2"]["la2_child2"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child2"]["la2_child3"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child3"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child3"]["la3_child1"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child3"]["la3_child2"]).not.toBeUndefined();
+    expect(tree[""]["live_app"]["la_child3"]["la3_child3"]).not.toBeUndefined();
+    expect(tree[""]["control_surfaces"]).not.toBeUndefined();
+    expect(tree[""]["control_surfaces"]["0"]).not.toBeUndefined();
+    expect(tree[""]["control_surfaces"]["1"]).not.toBeUndefined();
+    expect(tree[""]["control_surfaces"]["2"]).not.toBeUndefined();
+    expect(tree[""]["this_device"]).not.toBeUndefined();
+  });
+});
+
+describe('liveApiGetChildren from child', () => {
+  it('no level should return no children', () => {
+
+    var getChildren = liveApiGetChildren(getInfoMock);
+    var result = getChildren("live_app", 0);
+
+    console.log(result);
+
+    expect(result.sequence).toBe("live_app:type2|+|la_child1:type21|la_child2:type22|la_child3:type23|-")
+  });
+
+  it('one levels should return children', () => {
+
+    var getChildren = liveApiGetChildren(getInfoMock);
+    var result = getChildren("live_app", 1);
+
+    console.log(result);
+
+    expect(result.sequence).toBe('live_app:type2|+|' +
+      'la_child1:type21|' +
+        '+|la1_child1:type211|la1_child2:type212|la1_child3:type213|-' +
+      '|la_child2:type22|' +
+        '+|la2_child1:type121|la2_child2:type122|la2_child3:type123|-' +
+      '|la_child3:type23|' +
+        '+|la3_child1:type131|la3_child2:type132|la3_child3:type132|-|-');
+  });
+
+  it('two levels should return children', () => {
+
+    var getChildren = liveApiGetChildren(getInfoMock);
+    var result = getChildren("live_app", 2);
+
+    console.log(result);
+
+    expect(result.sequence).toBe('live_app:type2|' +
+      '+|la_child1:type21|' +
+        '+|la1_child1:type211|la1_child2:type212|la1_child3:type213|-' +
+      '|la_child2:type22|' +
+        '+|la2_child1:type121|la2_child2:type122|la2_child3:type123|-' +
+      '|la_child3:type23|' +
+        '+|la3_child1:type131|la3_child2:type132|la3_child3:type132|-|-');
+
+    var tree = parseTreeSequence(result.sequence);
+    expect(tree).not.toBeUndefined();
     expect(tree["live_app"]["la_child1"]).not.toBeUndefined();
     expect(tree["live_app"]["la_child1"]["la1_child1"]).not.toBeUndefined();
     expect(tree["live_app"]["la_child1"]["la1_child2"]).not.toBeUndefined();
@@ -161,114 +226,50 @@ describe('liveApiGetChildren from root', () => {
     expect(tree["live_app"]["la_child3"]["la3_child1"]).not.toBeUndefined();
     expect(tree["live_app"]["la_child3"]["la3_child2"]).not.toBeUndefined();
     expect(tree["live_app"]["la_child3"]["la3_child3"]).not.toBeUndefined();
-    expect(tree["control_surfaces"]).not.toBeUndefined();
-    expect(tree["control_surfaces"]["0"]).not.toBeUndefined();
-    expect(tree["control_surfaces"]["1"]).not.toBeUndefined();
-    expect(tree["control_surfaces"]["2"]).not.toBeUndefined();
-    expect(tree["this_device"]).not.toBeUndefined();
-  });
-});
-
-describe('liveApiGetChildren from child', () => {
-  it('no level should return no children', () => {
-
-    var getChildren = liveApiGetChildren(getInfoMock);
-    var result = getChildren("live_app", 0);
-
-    console.log(result);
-
-    expect(result.sequence).toBe("la_child1:type21|la_child2:type22|la_child3:type23")
-  });
-
-  it('one levels should return children', () => {
-
-    var getChildren = liveApiGetChildren(getInfoMock);
-    var result = getChildren("live_app", 1);
-
-    console.log(result);
-
-    expect(result.sequence).toBe('' +
-      'la_child1:type21|' +
-        '+|la1_child1:type211|la1_child2:type212|la1_child3:type213|-' +
-      '|la_child2:type22|' +
-        '+|la2_child1:type121|la2_child2:type122|la2_child3:type123|-' +
-      '|la_child3:type23|' +
-        '+|la3_child1:type131|la3_child2:type132|la3_child3:type132|-');
-  });
-
-  it('two levels should return children', () => {
-
-    var getChildren = liveApiGetChildren(getInfoMock);
-    var result = getChildren("live_app", 2);
-
-    console.log(result);
-
-    expect(result.sequence).toBe('' +
-      'la_child1:type21|' +
-        '+|la1_child1:type211|la1_child2:type212|la1_child3:type213|-' +
-      '|la_child2:type22|' +
-        '+|la2_child1:type121|la2_child2:type122|la2_child3:type123|-' +
-      '|la_child3:type23|' +
-        '+|la3_child1:type131|la3_child2:type132|la3_child3:type132|-');
-
-    var tree = parseTreeSequence(result.sequence);
-    expect(tree).not.toBeUndefined();
-    expect(tree["la_child1"]).not.toBeUndefined();
-    expect(tree["la_child1"]["la1_child1"]).not.toBeUndefined();
-    expect(tree["la_child1"]["la1_child2"]).not.toBeUndefined();
-    expect(tree["la_child1"]["la1_child3"]).not.toBeUndefined();
-    expect(tree["la_child2"]).not.toBeUndefined();
-    expect(tree["la_child2"]["la2_child1"]).not.toBeUndefined();
-    expect(tree["la_child2"]["la2_child2"]).not.toBeUndefined();
-    expect(tree["la_child2"]["la2_child3"]).not.toBeUndefined();
-    expect(tree["la_child3"]).not.toBeUndefined();
-    expect(tree["la_child3"]["la3_child1"]).not.toBeUndefined();
-    expect(tree["la_child3"]["la3_child2"]).not.toBeUndefined();
-    expect(tree["la_child3"]["la3_child3"]).not.toBeUndefined();
   });
 });
 
 describe('liveApiGetChildren with collections', () => {
   it('two level should return no collection children', () => {
 
-    let getChildren = liveApiGetChildren(getInfoMockCollections);
-    let result = getChildren("", 2);
+    var getChildren = liveApiGetChildren(getInfoMockCollections);
+    var result = getChildren("", 2);
 
     console.log(result);
 
-    expect(result.sequence).toBe("" +
-      "live_set:type1|" +
+    expect(result.sequence).toBe(":root|" +
+      "+|live_set:type1|" +
         "+|ls_child1:type11|" +
-          "+|ls1_tracks1:collection|ls1_tracks2:collection|-|-|" +
-      "control_surfaces:collection");
+          "+|ls1_tracks1:collection|ls1_tracks2:collection|-|-" +
+      "|control_surfaces:collection|-");
   });
 
   it('three level should return collection', () => {
 
-    let getChildren = liveApiGetChildren(getInfoMockCollections);
-    let result = getChildren("", 3);
+    var getChildren = liveApiGetChildren(getInfoMockCollections);
+    var result = getChildren("", 3);
 
     console.log(result);
 
-    expect(result.sequence).toBe("" +
-      "live_set:type1|" +
+    expect(result.sequence).toBe(":root|" +
+      "+|live_set:type1|" +
         "+|ls_child1:type11|" +
           "+|ls1_tracks1:collection|" +
             "+|0:type111|1:type112|2:type113|-" +
           "|ls1_tracks2:collection|" +
             "+|3:type123|4:type124|5:type125|-|-|-" +
-      "|control_surfaces:collection");
+      "|control_surfaces:collection|-");
   });
 
   it('four level should return collection and children', () => {
 
-    let getChildren = liveApiGetChildren(getInfoMockCollections);
-    let result = getChildren("", 4);
+    var getChildren = liveApiGetChildren(getInfoMockCollections);
+    var result = getChildren("", 4);
 
     console.log(result);
 
-    expect(result.sequence).toBe("" +
-      "live_set:type1|" +
+    expect(result.sequence).toBe(":root|" +
+      "+|live_set:type1|" +
         "+|ls_child1:type11|" +
           "+|ls1_tracks1:collection|" +
             "+|0:type111|" +
@@ -276,45 +277,45 @@ describe('liveApiGetChildren with collections', () => {
             "|1:type112|2:type113|-" +
           "|ls1_tracks2:collection|" +
             "+|3:type123|4:type124|5:type125|-|-|-" +
-      "|control_surfaces:collection");
+      "|control_surfaces:collection|-");
   });
 
   it('one levels should not return collection', () => {
 
-    let getChildren = liveApiGetChildren(getInfoMockCollections);
-    let result = getChildren("live_set", 1);
+    var getChildren = liveApiGetChildren(getInfoMockCollections);
+    var result = getChildren("live_set", 1);
 
     console.log(result);
 
-    expect(result.sequence).toBe('' +
-      "ls_child1:type11|" +
-        "+|ls1_tracks1:collection|ls1_tracks2:collection|-");
+    expect(result.sequence).toBe('live_set:type1|' +
+      "+|ls_child1:type11|" +
+        "+|ls1_tracks1:collection|ls1_tracks2:collection|-|-");
   });
 
   it('two levels should return collection', () => {
 
-    let getChildren = liveApiGetChildren(getInfoMockCollections);
-    let result = getChildren("live_set", 2);
+    var getChildren = liveApiGetChildren(getInfoMockCollections);
+    var result = getChildren("live_set", 2);
 
     console.log(result);
 
-    expect(result.sequence).toBe('' +
-      "ls_child1:type11|" +
+    expect(result.sequence).toBe('live_set:type1|' +
+      "+|ls_child1:type11|" +
         "+|ls1_tracks1:collection|" +
           "+|0:type111|1:type112|2:type113|-" +
         "|ls1_tracks2:collection|" +
-          "+|3:type123|4:type124|5:type125|-|-");
+          "+|3:type123|4:type124|5:type125|-|-|-");
 
-    let tree = parseTreeSequence(result.sequence);
+    var tree = parseTreeSequence(result.sequence);
     expect(tree).not.toBeUndefined();
-    expect(tree["ls_child1"]).not.toBeUndefined();
-    expect(tree["ls_child1"]["ls1_tracks1"]).not.toBeUndefined();
-    expect(tree["ls_child1"]["ls1_tracks1"]["0"]).not.toBeUndefined();
-    expect(tree["ls_child1"]["ls1_tracks1"]["1"]).not.toBeUndefined();
-    expect(tree["ls_child1"]["ls1_tracks1"]["2"]).not.toBeUndefined();
-    expect(tree["ls_child1"]["ls1_tracks2"]).not.toBeUndefined();
-    expect(tree["ls_child1"]["ls1_tracks2"]["3"]).not.toBeUndefined();
-    expect(tree["ls_child1"]["ls1_tracks2"]["4"]).not.toBeUndefined();
-    expect(tree["ls_child1"]["ls1_tracks2"]["5"]).not.toBeUndefined();
+    expect(tree["live_set"]["ls_child1"]).not.toBeUndefined();
+    expect(tree["live_set"]["ls_child1"]["ls1_tracks1"]).not.toBeUndefined();
+    expect(tree["live_set"]["ls_child1"]["ls1_tracks1"]["0"]).not.toBeUndefined();
+    expect(tree["live_set"]["ls_child1"]["ls1_tracks1"]["1"]).not.toBeUndefined();
+    expect(tree["live_set"]["ls_child1"]["ls1_tracks1"]["2"]).not.toBeUndefined();
+    expect(tree["live_set"]["ls_child1"]["ls1_tracks2"]).not.toBeUndefined();
+    expect(tree["live_set"]["ls_child1"]["ls1_tracks2"]["3"]).not.toBeUndefined();
+    expect(tree["live_set"]["ls_child1"]["ls1_tracks2"]["4"]).not.toBeUndefined();
+    expect(tree["live_set"]["ls_child1"]["ls1_tracks2"]["5"]).not.toBeUndefined();
   });
 });

@@ -12,11 +12,11 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
-import {Pages} from "../api/navigation";
+import {Pages} from "../state/navigation";
 import DevicesOtherIcon from '@mui/icons-material/DevicesOther';
 
 const pages = [
-  { title: 'Debugger', page: Pages.Debugger },
+  { title: 'Inspector', page: Pages.Inspector },
   { title: 'Tracks', page: Pages.Tracks },
   { title: 'Deck 1', page: Pages.Deck1 },
   { title: 'Deck 2', page: Pages.Deck2 },
