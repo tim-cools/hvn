@@ -344,6 +344,5 @@ function logBuffer(action, buffer) {
 //var liveObject = new LiveAPI("live_set tracks 0");
 //post("info", "\"" + liveObject.info.replace(/\n/g, "\\\\") + "\\n" );
 
-
 var getChildrenApi = liveApiGetChildren();
 post(getChildrenApi("", 2).sequence);

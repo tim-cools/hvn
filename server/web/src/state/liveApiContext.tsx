@@ -1,6 +1,7 @@
 import createContext from "./createContext"
 import React, {useEffect, useRef, useState} from 'react';
 import ReconnectingWebSocket from "reconnecting-websocket";
+import {ObjectPath} from "../api/objectPath";
 
 export type IncomingMessage = {
   action: string,
@@ -12,10 +13,10 @@ export type IncomingMessage = {
 export type OutgoingMessage = {
   action: string,
   path: string,
-  name: string
+  name: string | number | null
 }
 
-export class MessageQueue<TMessage> {
+export abstract class MessageQueue<TQueue, TMessage> {
 
   public messages: TMessage[];
 
@@ -23,21 +24,54 @@ export class MessageQueue<TMessage> {
     this.messages = messages;
   }
 
-  public queue(message: TMessage): MessageQueue<TMessage> {
-    return new MessageQueue([...this.messages, message]);
+  public queue(message: TMessage): TQueue {
+    return this.createQueue([...this.messages, message]);
   }
 
-  public queueAll(messages: TMessage[]): MessageQueue<TMessage> {
-    return new MessageQueue([...this.messages, ...messages]);
+  public queueAll(messages: TMessage[]): TQueue {
+    return this.createQueue([...this.messages, ...messages]);
   }
 
-  remove(toRemove: ReadonlyArray<TMessage>): MessageQueue<TMessage> {
+  protected abstract createQueue(messages: TMessage[]): TQueue;
+
+  remove(toRemove: ReadonlyArray<TMessage>): TQueue {
     const newMessages = this.messages.filter(message => toRemove.indexOf(message) >= 0)
-    return new MessageQueue(newMessages);
+    return this.createQueue(newMessages);
   }
 
   clear() {
-    return new MessageQueue([]);
+    return this.createQueue([]);
+  }
+}
+
+export class IncomingQueue extends MessageQueue<IncomingQueue, IncomingMessage> {
+  protected override createQueue(messages: IncomingMessage[]) {
+    return new IncomingQueue(messages);
+  }
+}
+
+export class OutgoingQueue extends MessageQueue<OutgoingQueue, OutgoingMessage> {
+
+  public getChildren(path: ObjectPath) {
+    const data = {
+      action: "get_children",
+      path: path.fullPath(),
+      name: 2,
+    };
+    return this.queue(data)
+  }
+
+  public getInfo(path: ObjectPath) {
+    const data = {
+      action: "get_info",
+      path: path.fullPath(),
+      name: null
+    };
+    return this.queue(data)
+  }
+
+  protected override createQueue(messages: OutgoingMessage[]) {
+    return new OutgoingQueue(messages);
   }
 }
 
@@ -45,14 +79,14 @@ export interface LiveApiState {
   lastMessage: any,
   setLastMessage: React.Dispatch<React.SetStateAction<any>>;
 
-  incoming: MessageQueue<IncomingMessage>,
-  setIncoming: React.Dispatch<React.SetStateAction<MessageQueue<IncomingMessage>>>;
+  incoming: IncomingQueue,
+  setIncoming: React.Dispatch<React.SetStateAction<IncomingQueue>>;
 
-  inspectorMessages: MessageQueue<IncomingMessage>,
-  setInspectorMessages: React.Dispatch<React.SetStateAction<MessageQueue<IncomingMessage>>>;
+  inspectorMessages: IncomingQueue,
+  setInspectorMessages: React.Dispatch<React.SetStateAction<IncomingQueue>>;
 
-  outgoing: MessageQueue<any>;
-  setOutgoing: React.Dispatch<React.SetStateAction<MessageQueue<any>>>;
+  outgoing: OutgoingQueue;
+  setOutgoing: React.Dispatch<React.SetStateAction<OutgoingQueue>>;
 }
 
 export const [useLiveApiContext, Provider] = createContext<LiveApiState>();
@@ -64,9 +98,9 @@ type ContextProviderProps = {
 export const LiveApiProvider = ({children}: ContextProviderProps) => {
 
   const [lastMessage, setLastMessage] = useState<any | null>(null);
-  const [incoming, setIncoming] = useState(new MessageQueue<IncomingMessage>());
-  const [inspectorMessages, setInspectorMessages] = useState(new MessageQueue<IncomingMessage>());
-  const [outgoing, setOutgoing] = useState(new MessageQueue<any>());
+  const [incoming, setIncoming] = useState(new IncomingQueue());
+  const [inspectorMessages, setInspectorMessages] = useState(new IncomingQueue());
+  const [outgoing, setOutgoing] = useState(new OutgoingQueue());
 
   const webSocketRef = useRef<ReconnectingWebSocket | null>(null);
 
@@ -115,7 +149,7 @@ export const LiveApiProvider = ({children}: ContextProviderProps) => {
 
   useEffect(() => {
     console.log("incoming.messages: " + incoming.messages.length);
-    if (incoming.messages.length == 0) return;
+    if (incoming.messages.length === 0) return;
     setLastMessage(incoming.messages[incoming.messages.length]);
     setInspectorMessages(messages => messages.queueAll(incoming.messages));
     setIncoming(messages => messages.clear())
@@ -123,7 +157,7 @@ export const LiveApiProvider = ({children}: ContextProviderProps) => {
 
   useEffect(() => {
     console.log("outgoing.messages: " + outgoing.messages.length);
-    if (outgoing.messages.length == 0) return;
+    if (outgoing.messages.length === 0) return;
     outgoing.messages.forEach(message => {
       const jsonValue = JSON.stringify(message);
       webSocketRef.current?.send(jsonValue);

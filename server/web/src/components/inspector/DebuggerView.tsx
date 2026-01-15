@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {Box, Button, Paper, Stack, TextField, Typography} from "@mui/material";
-import { useLiveApiContext} from "../../state/liveApiContext";
+import {useLiveApiContext} from "../../state/liveApiContext";
+import {ObjectPath} from "../../api/objectPath";
 
 export default function DebuggerView() {
 
@@ -19,12 +20,7 @@ export default function DebuggerView() {
   }
 
   function getChildren() {
-    const data = {
-      action: "get_children",
-      path: path,
-      name: 2,
-    };
-    setOutgoing(messages => messages.queue(data));
+    setOutgoing(messages => messages.getChildren(ObjectPath.parseString(path)));
   }
 
   function renderGetMessage() {

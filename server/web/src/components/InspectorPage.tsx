@@ -23,7 +23,7 @@ const ToolPanel = styled(Grid)`
 
 const FullHeightPaper = styled(Paper)`
   height: 100%;
-  padding: 8px;
+  padding: 2px;
   overflow-y: auto;
 `;
 

@@ -5,11 +5,9 @@ function startsWith(value, searchFor) {
 	return true;
 }
 
-
 function trim(value, trimValue) {
 	return value.slice(trimValue.length, 999);
 }
-
 
 function liveApiGetInfo(liveApiFactory) {
 
@@ -96,7 +94,6 @@ function liveApiGetInfo(liveApiFactory) {
 	return getInfo;
 }
 
-
 function liveApiGetChildren(getInfoMethod) {
 
 	const root = "";
@@ -115,21 +112,26 @@ function liveApiGetChildren(getInfoMethod) {
 			var path = getPath(currentPath, name);
 			var collectionIndex = 0;
 			var found = false;
+			var loadChildren = currentLevel < maxLevel;
+			var suffix = loadChildren ? "" : "-";            // end name with "-" suffix is children are not loaded
 
-			if (always || currentLevel == maxLevel) {
-				if (!addNode(currentPath, name, currentLevel)) {
-					tree.addNode(name + ":collection");
+			function addCollectionNode(level) {
+				if (!addNode(currentPath, name, level)) {
+					nodes.push(name + ":collection" + suffix);
+					tree.addNode(name + ":collection" + suffix);
 				}
+			}
+
+			if (always || !loadChildren) {
+				addCollectionNode(currentLevel)
 				tree.openScope();
 			} else {
-				tree.optionalParentNodeScope(function () {
-					if (!addNode(currentPath, name, currentLevel + 1)) {
-						tree.addNode(name + ":collection");
-					}
+				tree.optionalParentNodeScope(function() {
+					addCollectionNode(currentLevel + 1);
 				});
 			}
 
-			if (currentLevel >= maxLevel) {
+			if (!loadChildren) {
 				tree.closeScope();
 				return;
 			}
@@ -157,22 +159,29 @@ function liveApiGetChildren(getInfoMethod) {
 			}
 		}
 
-		function addNode(currentPath, name, currentLevel) {
+		function addNode(currentPath, name, currentLevel, includeFullPath) {
 
 			var path = getPath(currentPath, name);
 			var info = getInfo(path);
+			var loadChildren = currentLevel < maxLevel;
+			var suffix = loadChildren ? "" : "-";            // end name with "-" suffix is children are not loaded
 
 			var indent = currentLevel > 0 ? Array(currentLevel * 2).join(" ") : "";
 			if (!info) {
 				logging.push(indent + ": " + path + " - no info")
 				return false;
 			}
+
 			logging.push(indent + ": " + path)
+			nodes.push(path + ":" + info.type + suffix);
 
-			nodes.push(path + ":" + info.type);
-			tree.addNode(name + ":" + info.type)
+			if (includeFullPath) {
+				tree.addNode(path + ":" + info.type + suffix)
+			} else {
+				tree.addNode(name + ":" + info.type + suffix)
+			}
 
-			if (currentLevel >= maxLevel) return true;
+			if (!loadChildren) return true;
 
 			tree.openScope()
 			addChildrenFromInfo(info, path, currentLevel);
@@ -196,7 +205,7 @@ function liveApiGetChildren(getInfoMethod) {
 			var lastIndex = path.lastIndexOf(" ");
 			var parentPath = path.substr(0, lastIndex);
 			var name = path.substr(lastIndex + 1);
-			addNode(parentPath, name, -1);
+			addNode(parentPath, name, -1, true);
 		}
 
 		var logging = [];
@@ -218,34 +227,6 @@ function liveApiGetChildren(getInfoMethod) {
 
 	return getChildren;
 }
-
-
-function parseTreeSequence(sequence) {
-
-	var parts = sequence.split("|");
-	var objectStack = [];
-	var currentObject = {};
-	var lastObject = {};
-
-	for (var index = 0; index < parts.length; index ++) {
-		var part = parts[index];
-		var nodeParts = part.split(":");
-		var name = nodeParts[0];
-		if (name === "+") {
-			objectStack.push(currentObject);
-			currentObject = lastObject;
-		} else if (name === "-") {
-			currentObject = objectStack.pop();
-			lastObject = currentObject;
-		} else {
-			lastObject = {};
-			currentObject[name] = lastObject;
-		}
-	}
-
-	return currentObject;
-}
-
 
 function treeSequenceBuilder() {
 
@@ -312,6 +293,7 @@ function treeSequenceBuilder() {
 }
 
 
+
 var isReady = false;
 var started = new Date().getTime().toString();
 var actions = {};
@@ -360,12 +342,13 @@ actions['get_children'] = function(obj) {
 };
 
 
-actions['info'] = function(obj) {
+actions['get_info'] = function(obj) {
 	var path = obj[0],
 		callback = obj[1];
 
 	var api = getApi(path);
-	outlet(0, '/_info_reply', callback, api.info);
+	var info = "path " + path + "\n" + api.info;
+	outlet(0, '/_info_reply', callback, info);
 };
 
 actions['set'] = function(obj) {

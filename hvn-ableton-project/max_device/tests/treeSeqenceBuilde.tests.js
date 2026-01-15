@@ -1,5 +1,5 @@
-import parseTreeSequence from "../parseTreeSequence.js"
-import treeSequenceBuilder from "../treeSequenceBuilder.js"
+import parseTreeSequence from "../src/parseTreeSequence.js"
+import treeSequenceBuilder from "../src/treeSequenceBuilder.js"
 import expect from "expect"
 
 describe('treeSequenceBuilder', () => {

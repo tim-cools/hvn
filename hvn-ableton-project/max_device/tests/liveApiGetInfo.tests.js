@@ -1,4 +1,4 @@
-import liveApiGetInfo from "../liveApiGetInfo.js"
+import liveApiGetInfo from "../src/liveApiGetInfo.js"
 import expect from "expect"
 
 describe('liveApiGetInfo', () => {

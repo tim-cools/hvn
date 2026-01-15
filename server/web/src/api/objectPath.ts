@@ -22,7 +22,7 @@ export class ObjectPath {
   }
 
   public fullPath(): string {
-    return this.path.join('.');
+    return this.path.join(' ');
   }
 
   public lastPart(): string {

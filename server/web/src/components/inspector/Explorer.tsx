@@ -9,9 +9,11 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import {CircularProgress, styled} from "@mui/material";
 import Box from "@mui/material/Box";
-import {isLoading} from "../../state/loading";
+import {isLoading, Loading} from "../../state/loading";
 import {LiveObject} from "../../api/abletonLive";
 import DataObjectIcon from '@mui/icons-material/DataObject';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import {useLiveApiContext} from "../../state/liveApiContext";
 
 const indentValue = 16;
 const emptyIndentValue = 30;
@@ -28,23 +30,60 @@ const NoPaddingListItemIcon = styled(ListItemIcon)`
 function LiveObjectItem(props: {liveObject: LiveObject, indent: number}) {
 
   const {liveObject, indent} = props;
+  const {setOutgoing} = useLiveApiContext();
   const {liveObjectsTreeState, setLiveObjectsTreeState, setCurrentLiveObject} = useInspectorContext();
+
   const open = liveObjectsTreeState.isOpen(liveObject.path);
-  const setOpen = (value: boolean) => setLiveObjectsTreeState(state => state.setOpen(liveObject.path, value));
-  const hasChildren = !liveObject.childrenLoaded || liveObject.children.length > 0;
+  const setOpen = (value: boolean) => {
+    console.log(">>> setOpen " + liveObject.path.fullPath() + " liveObject.childrenNotLoaded>>>" + liveObject.childrenNotLoaded);
+    console.log(">>> setOpen " + liveObject.path.fullPath() + " liveObject.childrenNotLoaded>>>" + liveObject.childrenNotLoaded);
+    console.log(">>> setOpen " + liveObject.path.fullPath() + " liveObject.childrenNotLoaded>>>" + liveObject.childrenNotLoaded);
+    if (loading) return;
+    if (liveObject.childrenNotLoaded) {
+      setLiveObjectsTreeState(state => state.setLoading(liveObject.path, true));
+      setTimeout(() => {
+        setOutgoing(messages => messages.getChildren(liveObject.path))
+      }, 500);
+    } else {
+      setLiveObjectsTreeState(state => state.setOpen(liveObject.path, value));
+    }
+  }
+
+  const hasChildren = liveObject.childrenNotLoaded || liveObject.children.length > 0;
+  const loading = liveObjectsTreeState.isLoading(liveObject.path);
+  console.log(liveObject.childrenNotLoaded + ": lo: " + liveObject.path.fullPath() + " >> children.length: " + liveObject.children.length + " >> hasChildren " + hasChildren);
   const innerStyle = indent > 0
       ? hasChildren
         ? ({marginLeft: (indentValue * indent) + 'px'})
         : ({paddingLeft: (emptyIndentValue + indentValue * indent) + 'px'})
       : ({});
 
+  function selectObject() {
+    if (!liveObject.infoLoaded) {
+      setCurrentLiveObject(new Loading())
+      setOutgoing(messages => messages.getInfo(liveObject.path));
+    }
+    return setCurrentLiveObject(liveObject);
+  }
+
   return (
     <>
-      <ListItem disablePadding onClick={() => setCurrentLiveObject(liveObject)}>
+      <ListItem disablePadding onClick={() => selectObject()}>
         <NoPaddingListItemButton style={innerStyle}>
-          {hasChildren ? <NoPaddingListItemIcon onClick={() => setOpen(!open)}>
-            {open ? <KeyboardArrowDownIcon fontSize={"small"} /> : <KeyboardArrowRightIcon fontSize={"small"} />}
-          </NoPaddingListItemIcon>
+          {loading
+            ? <NoPaddingListItemIcon onClick={() => setOpen(!open)}>
+              <AutorenewIcon fontSize={"small"}  sx={{
+                animation: "spin 2s linear infinite",
+                "@keyframes spin": {
+                  "0%": {transform: "rotate(0deg)"},
+                  "100%": {transform: "rotate(360deg)"},
+                },
+              }}  />
+            </NoPaddingListItemIcon>
+            : <></>}
+          {!loading && hasChildren ? <NoPaddingListItemIcon onClick={() => setOpen(!open)}>
+              {open ? <KeyboardArrowDownIcon fontSize={"small"} /> : <KeyboardArrowRightIcon fontSize={"small"} />}
+            </NoPaddingListItemIcon>
             : <></>}
           <NoPaddingListItemIcon>
             <DataObjectIcon fontSize={"small"} />

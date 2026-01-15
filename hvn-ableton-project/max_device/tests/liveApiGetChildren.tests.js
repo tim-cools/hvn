@@ -1,5 +1,5 @@
-import liveApiGetChildren from "../liveApiGetChildren.js"
-import parseTreeSequence from "../parseTreeSequence.js";
+import liveApiGetChildren from "../src/liveApiGetChildren.js"
+import parseTreeSequence from "../src/parseTreeSequence.js";
 import expect from "expect"
 
 function liveObject(id, prefix, addChildren, addCollections) {
@@ -88,7 +88,7 @@ describe('liveApiGetChildren from root', () => {
     console.log(result);
 
     expect(result.sequence).toBe(":root|" +
-      "+|live_set:type1|live_app:type2|control_surfaces:type3|this_device:type4|-")
+      "+|live_set:type1-|live_app:type2-|control_surfaces:type3-|this_device:type4-|-")
   });
 
   it('one levels should return children', () => {
@@ -100,11 +100,11 @@ describe('liveApiGetChildren from root', () => {
 
     expect(result.sequence).toBe(':root|+|' +
       'live_set:type1|' +
-        '+|ls_child1:type11|ls_child2:type12|ls_child3:type13|-|' +
+        '+|ls_child1:type11-|ls_child2:type12-|ls_child3:type13-|-|' +
       'live_app:type2|' +
-        '+|la_child1:type21|la_child2:type22|la_child3:type23|-|' +
+        '+|la_child1:type21-|la_child2:type22-|la_child3:type23-|-|' +
       'control_surfaces:type3|' +
-        '+|0:type31|1:type32|2:type33|-|' +
+        '+|0:type31-|1:type32-|2:type33-|-|' +
       'this_device:type4|-')
   });
 
@@ -118,18 +118,18 @@ describe('liveApiGetChildren from root', () => {
     expect(result.sequence).toBe(':root|+|' +
       'live_set:type1|' +
         '+|ls_child1:type11|' +
-          '+|ls1_child1:type111|ls1_child2:type112|ls1_child3:type113|-' +
+          '+|ls1_child1:type111-|ls1_child2:type112-|ls1_child3:type113-|-' +
          '|ls_child2:type12|' +
-          '+|ls2_child1:type121|ls2_child2:type122|ls2_child3:type123|-' +
+          '+|ls2_child1:type121-|ls2_child2:type122-|ls2_child3:type123-|-' +
          '|ls_child3:type13|' +
-          '+|ls3_child1:type131|ls3_child2:type132|ls3_child3:type132|-|-' +
+          '+|ls3_child1:type131-|ls3_child2:type132-|ls3_child3:type132-|-|-' +
       '|live_app:type2|' +
         '+|la_child1:type21|' +
-          '+|la1_child1:type211|la1_child2:type212|la1_child3:type213|-' +
+          '+|la1_child1:type211-|la1_child2:type212-|la1_child3:type213-|-' +
         '|la_child2:type22|' +
-          '+|la2_child1:type121|la2_child2:type122|la2_child3:type123|-' +
+          '+|la2_child1:type121-|la2_child2:type122-|la2_child3:type123-|-' +
         '|la_child3:type23|' +
-          '+|la3_child1:type131|la3_child2:type132|la3_child3:type132|-|-' +
+          '+|la3_child1:type131-|la3_child2:type132-|la3_child3:type132-|-|-' +
       '|control_surfaces:type3|' +
         '+|0:type31|1:type32|2:type33|-' +
       '|this_device:type4|-');
@@ -178,7 +178,8 @@ describe('liveApiGetChildren from child', () => {
 
     console.log(result);
 
-    expect(result.sequence).toBe("live_app:type2|+|la_child1:type21|la_child2:type22|la_child3:type23|-")
+    expect(result.sequence).toBe("live_app:type2|" +
+      "+|la_child1:type21-|la_child2:type22-|la_child3:type23-|-")
   });
 
   it('one levels should return children', () => {
@@ -190,11 +191,11 @@ describe('liveApiGetChildren from child', () => {
 
     expect(result.sequence).toBe('live_app:type2|+|' +
       'la_child1:type21|' +
-        '+|la1_child1:type211|la1_child2:type212|la1_child3:type213|-' +
+        '+|la1_child1:type211-|la1_child2:type212-|la1_child3:type213-|-' +
       '|la_child2:type22|' +
-        '+|la2_child1:type121|la2_child2:type122|la2_child3:type123|-' +
+        '+|la2_child1:type121-|la2_child2:type122-|la2_child3:type123-|-' +
       '|la_child3:type23|' +
-        '+|la3_child1:type131|la3_child2:type132|la3_child3:type132|-|-');
+        '+|la3_child1:type131-|la3_child2:type132-|la3_child3:type132-|-|-');
   });
 
   it('two levels should return children', () => {
@@ -240,7 +241,7 @@ describe('liveApiGetChildren with collections', () => {
     expect(result.sequence).toBe(":root|" +
       "+|live_set:type1|" +
         "+|ls_child1:type11|" +
-          "+|ls1_tracks1:collection|ls1_tracks2:collection|-|-" +
+          "+|ls1_tracks1:collection-|ls1_tracks2:collection-|-|-" +
       "|control_surfaces:collection|-");
   });
 
@@ -255,9 +256,9 @@ describe('liveApiGetChildren with collections', () => {
       "+|live_set:type1|" +
         "+|ls_child1:type11|" +
           "+|ls1_tracks1:collection|" +
-            "+|0:type111|1:type112|2:type113|-" +
+            "+|0:type111-|1:type112-|2:type113-|-" +
           "|ls1_tracks2:collection|" +
-            "+|3:type123|4:type124|5:type125|-|-|-" +
+            "+|3:type123-|4:type124-|5:type125-|-|-|-" +
       "|control_surfaces:collection|-");
   });
 
@@ -273,7 +274,7 @@ describe('liveApiGetChildren with collections', () => {
         "+|ls_child1:type11|" +
           "+|ls1_tracks1:collection|" +
             "+|0:type111|" +
-              "+|ls11_child1:type1111|ls11_child2:type1112|ls11_child3:type1113|-" +
+              "+|ls11_child1:type1111-|ls11_child2:type1112-|ls11_child3:type1113-|-" +
             "|1:type112|2:type113|-" +
           "|ls1_tracks2:collection|" +
             "+|3:type123|4:type124|5:type125|-|-|-" +
@@ -289,7 +290,7 @@ describe('liveApiGetChildren with collections', () => {
 
     expect(result.sequence).toBe('live_set:type1|' +
       "+|ls_child1:type11|" +
-        "+|ls1_tracks1:collection|ls1_tracks2:collection|-|-");
+        "+|ls1_tracks1:collection-|ls1_tracks2:collection-|-|-");
   });
 
   it('two levels should return collection', () => {
@@ -297,14 +298,12 @@ describe('liveApiGetChildren with collections', () => {
     var getChildren = liveApiGetChildren(getInfoMockCollections);
     var result = getChildren("live_set", 2);
 
-    console.log(result);
-
     expect(result.sequence).toBe('live_set:type1|' +
       "+|ls_child1:type11|" +
         "+|ls1_tracks1:collection|" +
-          "+|0:type111|1:type112|2:type113|-" +
+          "+|0:type111-|1:type112-|2:type113-|-" +
         "|ls1_tracks2:collection|" +
-          "+|3:type123|4:type124|5:type125|-|-|-");
+          "+|3:type123-|4:type124-|5:type125-|-|-|-");
 
     var tree = parseTreeSequence(result.sequence);
     expect(tree).not.toBeUndefined();
@@ -317,5 +316,33 @@ describe('liveApiGetChildren with collections', () => {
     expect(tree["live_set"]["ls_child1"]["ls1_tracks2"]["3"]).not.toBeUndefined();
     expect(tree["live_set"]["ls_child1"]["ls1_tracks2"]["4"]).not.toBeUndefined();
     expect(tree["live_set"]["ls_child1"]["ls1_tracks2"]["5"]).not.toBeUndefined();
+  });
+
+  it('two levels path should return full path as first node and collection', () => {
+
+    var getChildren = liveApiGetChildren(getInfoMockCollections);
+    var result = getChildren("live_set ls_child1", 2);
+
+    console.log(result);
+
+    expect(result.sequence).toBe('live_set ls_child1:type11|' +
+      "+|ls1_tracks1:collection|" +
+        "+|0:type111|" +
+          "+|ls11_child1:type1111-|ls11_child2:type1112-|ls11_child3:type1113-|-" +
+        "|1:type112|2:type113|" +
+        "-|ls1_tracks2:collection|" +
+          "+|3:type123|4:type124|5:type125|-|-");
+
+    var tree = parseTreeSequence(result.sequence);
+    expect(tree).not.toBeUndefined();
+    expect(tree["live_set ls_child1"]).not.toBeUndefined();
+    expect(tree["live_set ls_child1"]["ls1_tracks1"]).not.toBeUndefined();
+    expect(tree["live_set ls_child1"]["ls1_tracks1"]["0"]).not.toBeUndefined();
+    expect(tree["live_set ls_child1"]["ls1_tracks1"]["1"]).not.toBeUndefined();
+    expect(tree["live_set ls_child1"]["ls1_tracks1"]["2"]).not.toBeUndefined();
+    expect(tree["live_set ls_child1"]["ls1_tracks2"]).not.toBeUndefined();
+    expect(tree["live_set ls_child1"]["ls1_tracks2"]["3"]).not.toBeUndefined();
+    expect(tree["live_set ls_child1"]["ls1_tracks2"]["4"]).not.toBeUndefined();
+    expect(tree["live_set ls_child1"]["ls1_tracks2"]["5"]).not.toBeUndefined();
   });
 });

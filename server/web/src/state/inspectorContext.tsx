@@ -4,7 +4,7 @@ import React, {useEffect, useState} from 'react';
 import {TreeNodeState} from "./treeNodeState";
 import {LayoutState} from "./layoutState";
 import {Loading} from "./loading";
-import {IncomingMessage, useLiveApiContext} from "./liveApiContext";
+import {useLiveApiContext} from "./liveApiContext";
 
 export interface InspectorState {
   liveObjects: LiveObjects;
@@ -49,7 +49,10 @@ export const InspectorContextProvider = ({children}: ContextProviderProps) => {
     inspectorMessages.messages.forEach(message => {
       switch (message.action) {
         case "get_children":
-          setLiveObjects(liveObjects => liveObjects.process(message.value))
+          setLiveObjects(liveObjects => liveObjects.process(message.value, setLiveObjectsTreeState));
+          break;
+        case "get_info":
+          setLiveObjects(liveObjects => liveObjects.processInfo(message.value, setLiveObjectsTreeState));
           break;
         default:
           console.log("Invalid action: " + message.action);

@@ -65,12 +65,14 @@ class LiveClient:
 
     def get_children_reply_handler(self, unused_addr, args, value):
         log(f"LiveClient - get children reply {args} {value}")
+        tree = parse_tree_sequence(value);
         data = {
             "action": "get_children",
             "addr": unused_addr,
             "args": args,
-            "value": parse_tree_sequence(value)
+            "value": tree
         }
+        log(f"LiveClient - get children reply {args} {tree}")
         json_value = json.dumps(data)
         self.responseHandler(json_value)
 
@@ -78,7 +80,7 @@ class LiveClient:
         log(f"LiveClient - info reply '{args}' '{value}'")
         if value == '"No object"':
             data = {
-                "action": "info",
+                "action": "get_info",
                 "error": True,
                 "addr": unused_addr,
                 "args": args,
@@ -86,7 +88,7 @@ class LiveClient:
             }
         else:
             data = {
-                "action": "info",
+                "action": "get_info",
                 "addr": unused_addr,
                 "args": args,
                 "value": self.parse_info(value)
@@ -166,6 +168,7 @@ class LiveClient:
         info = {}
         for line in lines:
             check(line, "id")
+            check(line, "path")
             check(line, "type")
             check(line, "description")
             checkCollection(line, "child", "children", True)
